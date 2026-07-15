@@ -1,0 +1,386 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ----------------------------------------------------
+// CORE: User
+// ----------------------------------------------------
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  identity       Identity? // 1-to-1 relationship with Identity
+  routines       Routine[] // 1-to-many relationship with Routines
+  journalEntries JournalEntry[] // 1-to-many relationship with Journals
+  reviews        Review[] // 1-to-many relationship with Reviews
+  focusSessions  FocusSession[] // 1-to-many relationship with Focus Sessions
+}
+
+// ----------------------------------------------------
+// MODULE 1: Identity
+// ----------------------------------------------------
+model Identity {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Mission & Vision are core parts of the Identity
+  mission String?
+  vision  String?
+
+  constitution Constitution? // 1-to-1 relationship
+  lifeAreas    LifeArea[] // 1-to-many relationship
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ----------------------------------------------------
+// MODULE 2: Constitution
+// ----------------------------------------------------
+model Constitution {
+  id         String   @id @default(uuid())
+  identityId String   @unique
+  identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  summary    String?     // Overall constitution summary/text
+  principles Principle[] // 1-to-many relationship
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Sub-entity for Constitution: Principles / Rules
+model Principle {
+  id             String       @id @default(uuid())
+  constitutionId String
+  constitution   Constitution @relation(fields: [constitutionId], references: [id], onDelete: Cascade)
+
+  title       String // e.g., "Continuous Learning"
+  description String?
+  order       Int     @default(0) // To allow user to sort their principles
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ----------------------------------------------------
+// ENUMS
+// ----------------------------------------------------
+enum GoalStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  ACHIEVED
+  ARCHIVED
+  CANCELLED
+}
+
+// ----------------------------------------------------
+// MODULE 3: Life Areas
+// ----------------------------------------------------
+model LifeArea {
+  id         String   @id @default(uuid())
+  identityId String
+  identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  title       String // e.g., "Health & Fitness", "Career", "Family"
+  description String?
+  icon        String? // Optional icon name or emoji to represent the area
+  order       Int     @default(0) // User-defined sorting order
+
+  goals    Goal[] // 1-to-many relationship with Goals
+  projects Project[] // 1-to-many relationship with Projects
+  habits   Habit[] // 1-to-many relationship with Habits
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ----------------------------------------------------
+// MODULE 4: Goals
+// ----------------------------------------------------
+model Goal {
+  id         String   @id @default(uuid())
+  lifeAreaId String
+  lifeArea   LifeArea @relation(fields: [lifeAreaId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?   
+  status      GoalStatus @default(NOT_STARTED)
+
+  targetDate DateTime? // Deadline or target achievement date
+  progress   Int       @default(0) // Percentage 0-100 (can be automated later based on Tasks)
+
+  projects Project[] // Projects linked to this specific Goal
+  habits   Habit[] // Habits that drive this Goal
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ----------------------------------------------------
+// ENUMS FOR PROJECTS & TASKS
+// ----------------------------------------------------
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// ----------------------------------------------------
+// MODULE 5: Projects
+// ----------------------------------------------------
+model Project {
+  id String @id @default(uuid())
+
+  // A project must belong to a Life Area
+  lifeAreaId String
+  lifeArea   LifeArea @relation(fields: [lifeAreaId], references: [id], onDelete: Cascade)
+
+  // A project optionally belongs to a specific Goal
+  goalId String?
+  goal   Goal?   @relation(fields: [goalId], references: [id], onDelete: SetNull)
+
+  title       String
+  description String?      
+  status      ProjectStatus @default(PLANNING)
+
+  startDate DateTime?
+  endDate   DateTime? // Target deadline
+  progress  Int       @default(0) // Percentage 0-100 (automated by Tasks completed)
+
+  tasks Task[] // 1-to-many relationship with Tasks
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ----------------------------------------------------
+// MODULE 6: Tasks
+// ----------------------------------------------------
+model Task {
+  id String @id @default(uuid())
+
+  // A task optionally belongs to a Project
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?   
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+
+  dueDate      DateTime? // Deadline for the task
+  scheduledFor DateTime? // When the user actually plans to DO the task (calendar/routine)
+
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+
+  focusSessions FocusSession[] // Tasks can have multiple focus sessions logged
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ----------------------------------------------------
+// ENUMS FOR HABITS & ROUTINES
+// ----------------------------------------------------
+enum FrequencyType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  CUSTOM_DAYS // e.g., Mon, Wed, Fri
+}
+
+enum TimeOfDay {
+  ANYTIME
+  MORNING
+  AFTERNOON
+  EVENING
+}
+
+// ----------------------------------------------------
+// MODULE 7: Habits
+// ----------------------------------------------------
+model Habit {
+  id String @id @default(uuid())
+
+  // Link to LifeArea (mandatory) to ensure it aligns with Identity
+  lifeAreaId String
+  lifeArea   LifeArea @relation(fields: [lifeAreaId], references: [id], onDelete: Cascade)
+
+  // Link to Goal (optional) if it specifically drives a goal
+  goalId String?
+  goal   Goal?   @relation(fields: [goalId], references: [id], onDelete: SetNull)
+
+  title       String
+  description String?
+
+  frequency  FrequencyType @default(DAILY)
+  customDays String? // JSON string or comma-separated if CUSTOM_DAYS is selected
+  timeOfDay  TimeOfDay     @default(ANYTIME)
+
+  isActive      Boolean @default(true)
+  currentStreak Int     @default(0)
+  longestStreak Int     @default(0)
+
+  logs     HabitLog[] // 1-to-many relationship with logs
+  routines RoutineHabit[] // Many-to-many relationship via join table
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ----------------------------------------------------
+// MODULE 8: Habit Logs (Daily Tracking)
+// ----------------------------------------------------
+model HabitLog {
+  id      String @id @default(uuid())
+  habitId String
+  habit   Habit  @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  date        DateTime @db.Date // The specific day this log belongs to
+  isCompleted Boolean  @default(false)
+  notes       String? 
+
+  createdAt DateTime @default(now())
+
+  // Ensure a habit can only have one log per specific date
+  @@unique([habitId, date])
+}
+
+// ----------------------------------------------------
+// MODULE 9: Routines
+// ----------------------------------------------------
+model Routine {
+  id     String @id @default(uuid())
+  userId String // Linked directly to User
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String // e.g., "Morning Routine", "Deep Work Startup"
+  description String?  
+  timeOfDay   TimeOfDay @default(MORNING)
+  isActive    Boolean   @default(true)
+
+  habits RoutineHabit[] // Linking Habits to this Routine
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Join Table for Many-to-Many relationship between Routines and Habits
+model RoutineHabit {
+  routineId String
+  habitId   String
+
+  routine Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  habit   Habit   @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  order Int @default(0) // Order of the habit within the specific routine
+
+  @@id([routineId, habitId])
+}
+
+// ----------------------------------------------------
+// ENUMS FOR REVIEWS & FOCUS
+// ----------------------------------------------------
+enum ReviewType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum Mood {
+  AWFUL
+  BAD
+  NEUTRAL
+  GOOD
+  AWESOME
+}
+
+// ----------------------------------------------------
+// MODULE 10: Journal
+// ----------------------------------------------------
+model JournalEntry {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date    DateTime @db.Date
+  content String  
+  mood    Mood?
+  tags    String? // Comma-separated or JSON array of tags
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Usually one main journal entry per day, but allowing flexibility.
+  // @@unique([userId, date]) // Uncomment if strictly one per day
+}
+
+// ----------------------------------------------------
+// MODULE 11: Reviews
+// ----------------------------------------------------
+model Review {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type            ReviewType
+  periodStartDate DateTime   @db.Date
+  periodEndDate   DateTime   @db.Date
+
+  wins         String? // What went well
+  improvements String? // What needs improvement
+  learnings    String? // Key takeaways
+  rating       Int? // Out of 10 for the period
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ----------------------------------------------------
+// MODULE 12: Focus Sessions
+// ----------------------------------------------------
+model FocusSession {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Optional link to a specific task
+  taskId String?
+  task   Task?   @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  startTime DateTime
+  endTime   DateTime?
+  duration  Int? // Duration in seconds or minutes
+
+  notes String?
+
+  createdAt DateTime @default(now())
+}
