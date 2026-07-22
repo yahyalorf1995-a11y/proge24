@@ -10,17 +10,20 @@ datasource db {
 // CORE: User
 // ----------------------------------------------------
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String?
+  passwordHash String // Stage 1: credentials auth (bcrypt hash, never plaintext)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   identity       Identity? // 1-to-1 relationship with Identity
   routines       Routine[] // 1-to-many relationship with Routines
   journalEntries JournalEntry[] // 1-to-many relationship with Journals
   reviews        Review[] // 1-to-many relationship with Reviews
   focusSessions  FocusSession[] // 1-to-many relationship with Focus Sessions
+  tasks          Task[] // 1-to-many: direct owner link (Task.projectId is optional,
+  // so ownership can't always be derived via Project -> LifeArea -> Identity)
 }
 
 // ----------------------------------------------------
@@ -32,8 +35,8 @@ model Identity {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Mission & Vision are core parts of the Identity
-  mission String?
-  vision  String?
+  mission String? @db.Text
+  vision  String? @db.Text
 
   constitution Constitution? // 1-to-1 relationship
   lifeAreas    LifeArea[] // 1-to-many relationship
@@ -50,7 +53,7 @@ model Constitution {
   identityId String   @unique
   identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
-  summary    String?     // Overall constitution summary/text
+  summary    String?     @db.Text // Overall constitution summary/text
   principles Principle[] // 1-to-many relationship
 
   createdAt DateTime @default(now())
@@ -64,7 +67,7 @@ model Principle {
   constitution   Constitution @relation(fields: [constitutionId], references: [id], onDelete: Cascade)
 
   title       String // e.g., "Continuous Learning"
-  description String?
+  description String? @db.Text
   order       Int     @default(0) // To allow user to sort their principles
 
   createdAt DateTime @default(now())
@@ -91,7 +94,7 @@ model LifeArea {
   identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   title       String // e.g., "Health & Fitness", "Career", "Family"
-  description String?
+  description String? @db.Text
   icon        String? // Optional icon name or emoji to represent the area
   order       Int     @default(0) // User-defined sorting order
 
@@ -112,7 +115,7 @@ model Goal {
   lifeArea   LifeArea @relation(fields: [lifeAreaId], references: [id], onDelete: Cascade)
 
   title       String
-  description String?   
+  description String?    @db.Text
   status      GoalStatus @default(NOT_STARTED)
 
   targetDate DateTime? // Deadline or target achievement date
@@ -165,7 +168,7 @@ model Project {
   goal   Goal?   @relation(fields: [goalId], references: [id], onDelete: SetNull)
 
   title       String
-  description String?      
+  description String?       @db.Text
   status      ProjectStatus @default(PLANNING)
 
   startDate DateTime?
@@ -184,12 +187,18 @@ model Project {
 model Task {
   id String @id @default(uuid())
 
+  // Stage 1: direct owner link, since a task can exist without a project
+  // (projectId below is optional) and therefore can't always be scoped
+  // to a user via Project -> LifeArea -> Identity.
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // A task optionally belongs to a Project
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   title       String
-  description String?   
+  description String?    @db.Text
   status      TaskStatus @default(TODO)
   priority    Priority   @default(MEDIUM)
 
@@ -237,7 +246,7 @@ model Habit {
   goal   Goal?   @relation(fields: [goalId], references: [id], onDelete: SetNull)
 
   title       String
-  description String?
+  description String? @db.Text
 
   frequency  FrequencyType @default(DAILY)
   customDays String? // JSON string or comma-separated if CUSTOM_DAYS is selected
@@ -264,7 +273,7 @@ model HabitLog {
 
   date        DateTime @db.Date // The specific day this log belongs to
   isCompleted Boolean  @default(false)
-  notes       String? 
+  notes       String?  @db.Text
 
   createdAt DateTime @default(now())
 
@@ -281,7 +290,7 @@ model Routine {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   title       String // e.g., "Morning Routine", "Deep Work Startup"
-  description String?  
+  description String?   @db.Text
   timeOfDay   TimeOfDay @default(MORNING)
   isActive    Boolean   @default(true)
 
@@ -332,7 +341,7 @@ model JournalEntry {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   date    DateTime @db.Date
-  content String  
+  content String   @db.Text
   mood    Mood?
   tags    String? // Comma-separated or JSON array of tags
 
@@ -355,9 +364,9 @@ model Review {
   periodStartDate DateTime   @db.Date
   periodEndDate   DateTime   @db.Date
 
-  wins         String? // What went well
-  improvements String? // What needs improvement
-  learnings    String? // Key takeaways
+  wins         String? @db.Text // What went well
+  improvements String? @db.Text // What needs improvement
+  learnings    String? @db.Text // Key takeaways
   rating       Int? // Out of 10 for the period
 
   createdAt DateTime @default(now())
@@ -380,7 +389,7 @@ model FocusSession {
   endTime   DateTime?
   duration  Int? // Duration in seconds or minutes
 
-  notes String?
+  notes String? @db.Text
 
   createdAt DateTime @default(now())
 }

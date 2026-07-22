@@ -75,47 +75,47 @@ export default async function TasksPage() {
       </Card>
 
       {/* Tasks List - Grouped by Status */}
-      <div className="grid gap-6 md:grid-cols-3 items-start">
+      <div className="grid gap-6 md:grid-cols-3">
         
         {/* TODO Column */}
-        <div className="flex flex-col gap-3 p-4 bg-muted/20 rounded-2xl border border-border/40">
-          <div className="flex items-center justify-between pb-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Circle className="w-3.5 h-3.5" /> To Do
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between border-b pb-2">
+            <h3 className="font-semibold flex items-center gap-2">
+              <Circle className="w-4 h-4 text-muted-foreground" /> To Do
             </h3>
-            <Badge variant="secondary" className="bg-muted/50 text-[10px] px-1.5">{todoTasks.length}</Badge>
+            <Badge variant="secondary">{todoTasks.length}</Badge>
           </div>
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-3">
             {todoTasks.map((task: any) => <TaskCard key={task.id} task={task} />)}
-            {todoTasks.length === 0 && <p className="text-xs text-muted-foreground text-center py-6 border border-dashed border-border/50 rounded-xl bg-card/50">No tasks to do.</p>}
+            {todoTasks.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No tasks to do.</p>}
           </div>
         </div>
 
         {/* IN PROGRESS Column */}
-        <div className="flex flex-col gap-3 p-4 bg-blue-500/5 rounded-2xl border border-blue-500/10">
-          <div className="flex items-center justify-between pb-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5" /> In Progress
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between border-b pb-2">
+            <h3 className="font-semibold flex items-center gap-2">
+              <Clock className="w-4 h-4 text-blue-500" /> In Progress
             </h3>
-            <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] px-1.5">{inProgressTasks.length}</Badge>
+            <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">{inProgressTasks.length}</Badge>
           </div>
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-3">
             {inProgressTasks.map((task: any) => <TaskCard key={task.id} task={task} />)}
-            {inProgressTasks.length === 0 && <p className="text-xs text-muted-foreground text-center py-6 border border-dashed border-blue-500/20 rounded-xl bg-card/50">Nothing in progress.</p>}
+            {inProgressTasks.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Nothing in progress.</p>}
           </div>
         </div>
 
         {/* DONE Column */}
-        <div className="flex flex-col gap-3 p-4 bg-green-500/5 rounded-2xl border border-green-500/10">
-          <div className="flex items-center justify-between pb-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-green-700 dark:text-green-500 flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5" /> Done
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between border-b pb-2">
+            <h3 className="font-semibold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-green-500" /> Done
             </h3>
-            <Badge variant="secondary" className="bg-green-500/10 text-green-700 dark:text-green-500 text-[10px] px-1.5">{doneTasks.length}</Badge>
+            <Badge variant="secondary" className="bg-green-500/10 text-green-600">{doneTasks.length}</Badge>
           </div>
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-3">
             {doneTasks.map((task: any) => <TaskCard key={task.id} task={task} />)}
-            {doneTasks.length === 0 && <p className="text-xs text-muted-foreground text-center py-6 border border-dashed border-green-500/20 rounded-xl bg-card/50">No tasks completed yet.</p>}
+            {doneTasks.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No tasks completed yet.</p>}
           </div>
         </div>
 
@@ -134,15 +134,15 @@ function TaskCard({ task }: { task: any }) {
   const isDone = task.status === "DONE";
   
   return (
-    <Card className={`relative group ${isDone ? "opacity-60 bg-muted/30 border-border/40" : "bg-card hover:shadow-sm hover:-translate-y-[1px] hover:border-primary/20 border-border/60"} transition-all duration-300 rounded-xl`}>
-      <CardContent className="p-4 flex flex-col gap-2.5">
+    <Card className={`relative group ${isDone ? "opacity-60 bg-muted/50" : "hover:border-primary/50"} transition-colors`}>
+      <CardContent className="p-4 flex flex-col gap-2">
         <div className="flex justify-between items-start gap-2">
-          <div className="flex flex-col gap-1.5">
-            <span className={`text-sm font-medium leading-tight ${isDone ? "line-through text-muted-foreground" : "text-foreground/90"}`}>
+          <div className="flex flex-col gap-1">
+            <span className={`text-sm font-medium leading-tight ${isDone ? "line-through text-muted-foreground" : ""}`}>
               {task.title}
             </span>
             {task.description && (
-              <span className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+              <span className="text-xs text-muted-foreground line-clamp-2">
                 {task.description}
               </span>
             )}
@@ -150,44 +150,44 @@ function TaskCard({ task }: { task: any }) {
 
           <form action={deleteTask}>
             <input type="hidden" name="id" value={task.id} />
-            <Button variant="ghost" size="icon" aria-label="Delete Task" className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:bg-destructive/10">
-              <Trash2 size={13} />
+            <Button variant="ghost" size="icon" aria-label="Delete Task" className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+              <Trash2 size={14} />
             </Button>
           </form>
         </div>
 
-        <div className="flex items-center justify-between mt-1 pt-3 border-t border-border/40">
-          <div className="flex flex-wrap gap-1.5">
+        <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
+          <div className="flex gap-2">
              {task.project && (
-               <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-medium bg-muted/60 text-muted-foreground rounded-sm">
-                 {task.project.title.length > 15 ? task.project.title.substring(0, 15) + '...' : task.project.title}
+               <Badge variant="outline" className="text-[9px] px-1 py-0 font-normal">
+                 {task.project.title.substring(0, 15)}...
                </Badge>
              )}
-             {(task.priority === "HIGH" || task.priority === "URGENT") && (
-               <Badge variant="destructive" className="text-[9px] px-1.5 py-0 rounded-sm">{task.priority}</Badge>
-             )}
+             {task.priority === "HIGH" || task.priority === "URGENT" ? (
+               <Badge variant="destructive" className="text-[9px] px-1 py-0">{task.priority}</Badge>
+             ) : null}
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             {task.status === "TODO" && (
               <form action={updateTaskStatus}>
                 <input type="hidden" name="id" value={task.id} />
                 <input type="hidden" name="status" value="IN_PROGRESS" />
-                <Button size="sm" variant="outline" className="h-6 text-[10px] px-2.5 rounded-full hover:bg-primary/5 hover:text-primary transition-colors">Start</Button>
+                <Button size="sm" variant="outline" className="h-6 text-[10px] px-2">Start</Button>
               </form>
             )}
             {task.status === "IN_PROGRESS" && (
               <form action={updateTaskStatus}>
                 <input type="hidden" name="id" value={task.id} />
                 <input type="hidden" name="status" value="DONE" />
-                <Button size="sm" className="h-6 text-[10px] px-2.5 rounded-full bg-green-600 hover:bg-green-700 text-white shadow-sm transition-colors">Done</Button>
+                <Button size="sm" className="h-6 text-[10px] px-2 bg-green-600 hover:bg-green-700">Done</Button>
               </form>
             )}
             {task.status === "DONE" && (
                <form action={updateTaskStatus}>
                <input type="hidden" name="id" value={task.id} />
                <input type="hidden" name="status" value="TODO" />
-               <Button size="sm" variant="ghost" className="h-6 text-[10px] px-2.5 rounded-full text-muted-foreground hover:text-foreground transition-colors">Undo</Button>
+               <Button size="sm" variant="ghost" className="h-6 text-[10px] px-2 text-muted-foreground">Undo</Button>
              </form>
             )}
           </div>

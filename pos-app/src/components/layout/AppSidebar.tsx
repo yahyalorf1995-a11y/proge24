@@ -11,6 +11,7 @@ import {
   BookOpen,
   LineChart,
   SearchCheck,
+  LogOut,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -27,74 +28,88 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { logOut } from "@/features/auth/actions";
 
 // Grouping navigation items for better UX
 const navGroups = [
   {
-    label: "Command Center",
+    label: "مركز القيادة",
     items: [
-      { title: "Dashboard", url: "/", icon: Home },
+      { title: "لوحة التحكم", url: "/", icon: Home },
     ],
   },
   {
-    label: "Strategy (Planning)",
+    label: "الاستراتيجية (التخطيط)",
     items: [
-      { title: "Identity", url: "/identity", icon: Target },
-      { title: "Constitution", url: "/constitution", icon: BookOpen },
-      { title: "Vision", url: "/vision", icon: Target },
-      { title: "Life Areas", url: "/life-areas", icon: LayoutList },
-      { title: "Goals", url: "/goals", icon: Target },
+      { title: "الهوية", url: "/identity", icon: Target },
+      { title: "الدستور", url: "/constitution", icon: BookOpen },
+      { title: "الرؤية", url: "/vision", icon: Target },
+      { title: "مجالات الحياة", url: "/life-areas", icon: LayoutList },
+      { title: "الأهداف", url: "/goals", icon: Target },
     ],
   },
   {
-    label: "Execution (Doing)",
+    label: "التنفيذ (العمل)",
     items: [
-      { title: "Projects", url: "/projects", icon: FolderKanban },
-      { title: "Tasks", url: "/tasks", icon: CheckCircle },
-      { title: "Habits", url: "/habits", icon: Repeat },
+      { title: "المشاريع", url: "/projects", icon: FolderKanban },
+      { title: "المهام", url: "/tasks", icon: CheckCircle },
+      { title: "العادات", url: "/habits", icon: Repeat },
     ],
   },
   {
-    label: "Tracking (Reviewing)",
+    label: "المتابعة (المراجعة)",
     items: [
-      { title: "Journal", url: "/journal", icon: BookOpen },
-      { title: "Reviews", url: "/reviews", icon: SearchCheck },
-      { title: "Analytics", url: "/analytics", icon: LineChart }, // Placeholder
+      { title: "اليوميات", url: "/journal", icon: BookOpen },
+      { title: "المراجعات", url: "/reviews", icon: SearchCheck },
+      { title: "التحليلات", url: "/analytics", icon: LineChart },
     ],
   },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({
+  userEmail,
+  userName,
+}: {
+  userEmail: string;
+  userName: string | null;
+}) {
   const pathname = usePathname();
+  const displayName = userName || userEmail || "الحساب";
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "شخ";
 
   return (
-    <Sidebar variant="sidebar" collapsible="icon" className="border-r-border/40">
-      <SidebarHeader className="p-5 border-b border-border/40">
+    <Sidebar variant="sidebar" collapsible="icon" side="right">
+      <SidebarHeader className="p-4 border-b">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground text-background shrink-0 shadow-sm">
-            <span className="font-bold text-xs">OS</span>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shrink-0">
+            <span className="font-bold">نظ</span>
           </div>
-          <span className="font-semibold text-sm tracking-tight truncate group-data-[collapsible=icon]:hidden">
-            Personal OS
+          <span className="font-bold text-lg tracking-tight truncate group-data-[collapsible=icon]:hidden">
+            نظامي الشخصي
           </span>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="p-3 gap-0">
+      <SidebarContent>
         {navGroups.map((group, index) => (
-          <SidebarGroup key={index} className="pt-2">
-            <SidebarGroupLabel className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase px-2 mb-1">{group.label}</SidebarGroupLabel>
+          <SidebarGroup key={index}>
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map((item) => {
                   const isActive = pathname === item.url || (pathname.startsWith(item.url) && item.url !== "/");
-                  
+
                   return (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton isActive={isActive} tooltip={item.title} className={`rounded-lg h-9 transition-all duration-200 ${isActive ? 'bg-primary/5 text-primary font-medium shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}>
-                        <Link href={item.url} className="flex items-center gap-2.5 w-full h-full">
-                          <item.icon className={`h-4 w-4 shrink-0 transition-colors duration-200 ${isActive ? 'text-primary' : 'text-muted-foreground/70'}`} />
-                          <span className="truncate text-sm">{item.title}</span>
+                      <SidebarMenuButton isActive={isActive} tooltip={item.title}>
+                        <Link href={item.url} className="flex items-center gap-2 w-full h-full">
+                          <item.icon className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -106,25 +121,35 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-border/40 group-data-[collapsible=icon]:p-2">
+      <SidebarFooter className="p-4 border-t group-data-[collapsible=icon]:p-2">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Settings" className="rounded-lg h-9 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200">
-              <Link href="/settings" className="flex items-center gap-2.5 w-full h-full">
-                <Settings className="h-4 w-4 shrink-0 text-muted-foreground/70" />
-                <span className="truncate text-sm">Settings</span>
+            <SidebarMenuButton tooltip="الإعدادات">
+              <Link href="/settings" className="flex items-center gap-2 w-full h-full">
+                <Settings className="h-4 w-4 shrink-0" />
+                <span className="truncate">الإعدادات</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <div className="flex items-center gap-3 px-2 py-2 w-full mt-2 overflow-hidden bg-transparent hover:bg-muted/30 transition-colors rounded-lg cursor-pointer">
-              <Avatar className="h-7 w-7 rounded-md shrink-0 shadow-sm">
-                <AvatarFallback className="rounded-md bg-primary/10 text-primary font-semibold text-[10px]">US</AvatarFallback>
+            <div className="flex items-center gap-3 px-2 py-2 w-full mt-2 overflow-hidden bg-muted/50 rounded-lg">
+              <Avatar className="h-8 w-8 rounded-md shrink-0 border border-background">
+                <AvatarFallback className="rounded-md bg-primary/10 text-primary font-semibold">{initials}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col flex-1 group-data-[collapsible=icon]:hidden truncate">
-                <span className="text-sm font-medium leading-none truncate text-foreground/90">User</span>
-                <span className="text-[10px] text-muted-foreground mt-1 truncate">Free Plan</span>
+                <span className="text-sm font-medium leading-none truncate">{displayName}</span>
+                <span className="text-[10px] text-muted-foreground mt-1 truncate">{userEmail}</span>
               </div>
+              <form action={logOut} className="group-data-[collapsible=icon]:hidden">
+                <button
+                  type="submit"
+                  aria-label="تسجيل الخروج"
+                  title="تسجيل الخروج"
+                  className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                </button>
+              </form>
             </div>
           </SidebarMenuItem>
         </SidebarMenu>

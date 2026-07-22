@@ -2,55 +2,27 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { getCurrentIdentity } from "@/lib/current-user";
 
-// Helper function to get or create a dummy user for development
-async function getTestUser() {
-  let user = await prisma.user.findFirst();
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        email: "test@pos.com",
-        name: "Test User",
-      },
-    });
-  }
-  return user;
-}
-
-// Fetch Identity
+// Fetch Identity (creating an empty one on first visit)
 export async function getIdentity() {
-  const user = await getTestUser();
-  
-  let identity = await prisma.identity.findUnique({
-    where: { userId: user.id },
+  const identity = await getCurrentIdentity();
+
+  return prisma.identity.findUnique({
+    where: { id: identity.id },
     include: { constitution: true },
   });
-
-  // Create an empty identity if none exists
-  if (!identity) {
-    identity = await prisma.identity.create({
-      data: {
-        userId: user.id,
-      },
-      include: { constitution: true },
-    });
-  }
-
-  return identity;
 }
 
-// Update Identity (Mission)
+// Update Identity (Mission & Vision)
 export async function updateIdentity(formData: FormData) {
-  const user = await getTestUser();
+  const identity = await getCurrentIdentity();
   const mission = formData.get("mission") as string;
-
-  if (mission === null) return;
+  const vision = formData.get("vision") as string;
 
   await prisma.identity.update({
-    where: { userId: user.id },
-    data: {
-      mission,
-    },
+    where: { id: identity.id },
+    data: { mission, vision },
   });
 
   revalidatePath("/identity");

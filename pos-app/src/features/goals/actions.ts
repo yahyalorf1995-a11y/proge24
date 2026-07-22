@@ -2,11 +2,17 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import type { GoalStatus } from "@prisma/client";
+import { getCurrentIdentity } from "@/lib/current-user";
+import { ownsLifeArea, forIdentityViaLifeArea } from "@/lib/ownership";
 
-// Fetch Goals with their linked Life Areas
+// Fetch Goals with their linked Life Areas — scoped to the current user
 export async function getGoals() {
-  return await prisma.goal.findMany({
+  const identity = await getCurrentIdentity();
+  return prisma.goal.findMany({
+    where: forIdentityViaLifeArea(identity.id),
     include: { lifeArea: true, projects: true },
+    orderBy: { createdAt: "desc" },
   });
 }
 
@@ -15,8 +21,13 @@ export async function createGoal(formData: FormData) {
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
   const lifeAreaId = formData.get("lifeAreaId") as string;
-  
+
   if (!title || !lifeAreaId) return;
+
+  const identity = await getCurrentIdentity();
+  // Verify the target life area actually belongs to the current user
+  // before attaching a goal to it.
+  if (!(await ownsLifeArea(lifeAreaId, { identityId: identity.id }))) return;
 
   await prisma.goal.create({
     data: {
@@ -31,28 +42,30 @@ export async function createGoal(formData: FormData) {
   revalidatePath("/goals");
 }
 
-// Update Goal Status
+// Update Goal Status (only if it belongs to the current user)
 export async function updateGoalStatus(formData: FormData) {
   const id = formData.get("id") as string;
-  const status = formData.get("status") as string;
-  
+  const status = formData.get("status") as GoalStatus;
+
   if (!id || !status) return;
 
-  await prisma.goal.update({
-    where: { id },
+  const identity = await getCurrentIdentity();
+  await prisma.goal.updateMany({
+    where: { id, ...forIdentityViaLifeArea(identity.id) },
     data: { status },
   });
 
   revalidatePath("/goals");
 }
 
-// Delete Goal
+// Delete Goal (only if it belongs to the current user)
 export async function deleteGoal(formData: FormData) {
   const id = formData.get("id") as string;
   if (!id) return;
 
-  await prisma.goal.delete({
-    where: { id },
+  const identity = await getCurrentIdentity();
+  await prisma.goal.deleteMany({
+    where: { id, ...forIdentityViaLifeArea(identity.id) },
   });
 
   revalidatePath("/goals");

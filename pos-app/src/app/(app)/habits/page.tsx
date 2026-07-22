@@ -12,8 +12,6 @@ export default async function HabitsPage() {
   const lifeAreas = await getLifeAreas();
   const goals = await getGoals();
 
-  const today = new Date().toISOString().split('T')[0];
-
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto">
       <div>
@@ -76,7 +74,7 @@ export default async function HabitsPage() {
       {/* Habits List */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {habits.map((habit: any) => {
-          const isDoneToday = habit.lastCompletedDate === today;
+          const isDoneToday = habit.isDoneToday;
           
           return (
             <Card key={habit.id} className={`relative overflow-hidden group transition-colors ${isDoneToday ? "border-green-500/50 bg-green-500/5" : "hover:border-primary/50"}`}>

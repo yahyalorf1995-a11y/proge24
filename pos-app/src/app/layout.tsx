@@ -1,25 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Cairo } from "next/font/google";
 import "./globals.css";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/layout/AppSidebar";
-import { TooltipProvider } from "@/components/ui/tooltip";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const cairo = Cairo({
+  variable: "--font-cairo",
+  subsets: ["arabic", "latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Personal Operating System",
-  description: "A comprehensive SaaS platform to manage your identity, goals, and daily execution.",
+  title: "نظام التشغيل الشخصي",
+  description: "منصة شاملة لإدارة هويتك وأهدافك وتنفيذك اليومي.",
 };
 
+// Deliberately minimal: this is the ONLY layout shared by both the public
+// pages (/login, /signup) and the authenticated app (the "(app)" route
+// group below, which has its own layout with the Sidebar + auth check).
+// Do not add data fetching or auth-only UI here.
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,26 +23,12 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      lang="ar"
+      dir="rtl"
+      className={`${cairo.variable} h-full antialiased`}
     >
-      <body>
-        <TooltipProvider>
-          <SidebarProvider>
-            <AppSidebar />
-            <main className="flex flex-1 flex-col w-full min-w-0">
-              <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-4 border-b px-6 bg-background/80 backdrop-blur-md">
-                <SidebarTrigger />
-                <div className="w-full flex-1 font-semibold text-sm text-muted-foreground">
-                  Command Center
-                </div>
-              </header>
-              <div className="flex-1 p-4 md:p-6 bg-muted/20">
-                {children}
-              </div>
-            </main>
-          </SidebarProvider>
-        </TooltipProvider>
+      <body className="h-full flex flex-col overflow-hidden font-sans">
+        {children}
       </body>
     </html>
   );
