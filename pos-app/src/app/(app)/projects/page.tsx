@@ -7,6 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2, FolderKanban } from "lucide-react";
 import { JourneyFooter } from "@/components/layout/JourneyFooter";
 
+const STATUS_LABELS: Record<string, string> = {
+  PLANNING: "تخطيط",
+  ACTIVE: "نشط",
+  ON_HOLD: "متوقّف مؤقتًا",
+  COMPLETED: "مكتمل",
+};
+
 export default async function ProjectsPage() {
   const projects = await getProjects();
   const lifeAreas = await getLifeAreas();
@@ -15,16 +22,16 @@ export default async function ProjectsPage() {
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
+        <h1 className="text-3xl font-bold tracking-tight">المشاريع</h1>
         <p className="text-muted-foreground mt-2">
-          Projects are actionable containers for your tasks. Link them to Life Areas and Goals.
+          المشاريع حاويات قابلة للتنفيذ لمهامك. اربطها بمجالات الحياة والأهداف.
         </p>
       </div>
 
       {/* Add New Project Form */}
       <Card className="bg-background">
         <CardHeader>
-          <CardTitle className="text-lg">Create a New Project</CardTitle>
+          <CardTitle className="text-lg">إنشاء مشروع جديد</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={createProject} className="flex gap-4 items-start flex-col md:flex-row">
@@ -32,12 +39,12 @@ export default async function ProjectsPage() {
               <input
                 name="title"
                 required
-                placeholder="Project Title (e.g., Build Portfolio Website)"
+                placeholder="عنوان المشروع (مثال: بناء موقع شخصي)"
                 className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
               <input
                 name="description"
-                placeholder="Short description..."
+                placeholder="وصف مختصر..."
                 className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
               
@@ -47,7 +54,7 @@ export default async function ProjectsPage() {
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 defaultValue=""
               >
-                <option value="" disabled>Select Life Area (Required)</option>
+                <option value="" disabled>اختر مجال حياة (مطلوب)</option>
                 {lifeAreas.map((la: any) => (
                   <option key={la.id} value={la.id}>{la.title}</option>
                 ))}
@@ -58,14 +65,14 @@ export default async function ProjectsPage() {
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 defaultValue="none"
               >
-                <option value="none">No specific goal (Optional)</option>
+                <option value="none">بدون هدف محدد (اختياري)</option>
                 {goals.map((g: any) => (
                   <option key={g.id} value={g.id}>{g.title}</option>
                 ))}
               </select>
             </div>
             
-            <Button type="submit" className="h-10 w-full md:w-auto mt-4 md:mt-0 whitespace-nowrap">Create Project</Button>
+            <Button type="submit" className="h-10 w-full md:w-auto mt-4 md:mt-0 whitespace-nowrap">إنشاء المشروع</Button>
           </form>
         </CardContent>
       </Card>
@@ -84,11 +91,11 @@ export default async function ProjectsPage() {
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex flex-col gap-1">
                     <Badge variant="outline" className="text-xs font-normal w-fit">
-                      {project.lifeArea?.title || "Unknown Area"}
+                      {project.lifeArea?.title || "مجال غير معروف"}
                     </Badge>
                     {project.goal && (
                       <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                        ↳ Goal: {project.goal.title}
+                        ↳ الهدف: {project.goal.title}
                       </span>
                     )}
                   </div>
@@ -96,7 +103,7 @@ export default async function ProjectsPage() {
                   {/* Delete Button */}
                   <form action={deleteProject}>
                     <input type="hidden" name="id" value={project.id} />
-                    <Button variant="ghost" size="icon" aria-label="Delete Project" className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity" title="Delete Project">
+                    <Button variant="ghost" size="icon" aria-label="حذف المشروع" className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity" title="حذف المشروع">
                       <Trash2 size={14} />
                     </Button>
                   </form>
@@ -110,12 +117,12 @@ export default async function ProjectsPage() {
               </CardHeader>
               <CardContent className="flex-1">
                 <CardDescription className="line-clamp-2 mb-4">
-                  {project.description || "No description provided."}
+                  {project.description || "لا يوجد وصف."}
                 </CardDescription>
                 
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Progress ({project.tasks?.length || 0} Tasks)</span>
+                    <span>التقدّم ({project.tasks?.length || 0} مهام)</span>
                     <span>{project.progress}%</span>
                   </div>
                   <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
@@ -131,7 +138,7 @@ export default async function ProjectsPage() {
                   project.status === "ACTIVE" ? "bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-500/20" : 
                   project.status === "PLANNING" ? "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border-blue-500/20" : ""
                 }>
-                  {project.status.replace("_", " ")}
+                  {STATUS_LABELS[project.status] ?? project.status}
                 </Badge>
 
                 {/* Status toggles - simple quick actions */}
@@ -140,14 +147,14 @@ export default async function ProjectsPage() {
                     <form action={updateProjectStatus}>
                       <input type="hidden" name="id" value={project.id} />
                       <input type="hidden" name="status" value="ACTIVE" />
-                      <Button size="sm" variant="outline" className="h-7 text-xs px-2">Start</Button>
+                      <Button size="sm" variant="outline" className="h-7 text-xs px-2">ابدأ</Button>
                     </form>
                   )}
                   {project.status === "ACTIVE" && (
                     <form action={updateProjectStatus}>
                       <input type="hidden" name="id" value={project.id} />
                       <input type="hidden" name="status" value="COMPLETED" />
-                      <Button size="sm" className="h-7 text-xs px-2">Complete</Button>
+                      <Button size="sm" className="h-7 text-xs px-2">إكمال</Button>
                     </form>
                   )}
                 </div>
@@ -158,14 +165,14 @@ export default async function ProjectsPage() {
 
         {projects.length === 0 && (
           <div className="col-span-full py-12 text-center text-muted-foreground border border-dashed rounded-lg">
-            No projects found. Create your first project to start executing!
+            لا توجد مشاريع بعد. أنشئ أول مشروع لتبدأ التنفيذ!
           </div>
         )}
       </div>
 
       <JourneyFooter 
-        prevLink="/goals" prevLabel="Back to Goals"
-        nextLink="/tasks" nextLabel="Next Step: Execute Tasks" 
+        prevLink="/goals" prevLabel="العودة للأهداف"
+        nextLink="/tasks" nextLabel="الخطوة التالية: نفّذ المهام" 
       />
     </div>
   );

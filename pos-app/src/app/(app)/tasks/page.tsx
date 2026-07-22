@@ -6,6 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2, Circle, CheckCircle2, Clock } from "lucide-react";
 import { JourneyFooter } from "@/components/layout/JourneyFooter";
 
+const PRIORITY_LABELS: Record<string, string> = {
+  LOW: "منخفضة",
+  MEDIUM: "متوسطة",
+  HIGH: "عالية",
+  URGENT: "عاجلة",
+};
+
 export default async function TasksPage() {
   const tasks = await getTasks();
   const projects = await getProjects();
@@ -18,16 +25,16 @@ export default async function TasksPage() {
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
+        <h1 className="text-3xl font-bold tracking-tight">المهام</h1>
         <p className="text-muted-foreground mt-2">
-          Your daily execution backlog. Link tasks to projects to ensure your work moves the needle.
+          قائمة تنفيذك اليومية. اربط المهام بالمشاريع لتضمن أن عملك يُحرّك المؤشر فعليًا.
         </p>
       </div>
 
       {/* Add New Task Form */}
       <Card className="bg-background border-primary/20 shadow-sm">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg">Quick Add Task</CardTitle>
+          <CardTitle className="text-lg">إضافة مهمة سريعة</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={createTask} className="flex gap-4 items-start flex-col md:flex-row">
@@ -36,7 +43,7 @@ export default async function TasksPage() {
                 <input
                   name="title"
                   required
-                  placeholder="What needs to be done?"
+                  placeholder="ما الذي يجب إنجازه؟"
                   className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 />
                 <select
@@ -44,16 +51,16 @@ export default async function TasksPage() {
                   className="flex h-10 w-[140px] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   defaultValue="MEDIUM"
                 >
-                  <option value="LOW">Low Priority</option>
-                  <option value="MEDIUM">Medium Priority</option>
-                  <option value="HIGH">High Priority</option>
-                  <option value="URGENT">Urgent</option>
+                  <option value="LOW">أولوية منخفضة</option>
+                  <option value="MEDIUM">أولوية متوسطة</option>
+                  <option value="HIGH">أولوية عالية</option>
+                  <option value="URGENT">عاجلة</option>
                 </select>
               </div>
               <div className="flex gap-4">
                 <input
                   name="description"
-                  placeholder="Details (Optional)"
+                  placeholder="تفاصيل (اختياري)"
                   className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 />
                 <select
@@ -61,7 +68,7 @@ export default async function TasksPage() {
                   className="flex h-10 w-[240px] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   defaultValue="none"
                 >
-                  <option value="none">Inbox (No Project)</option>
+                  <option value="none">صندوق الوارد (بدون مشروع)</option>
                   {projects.map((p: any) => (
                     <option key={p.id} value={p.id}>{p.title}</option>
                   ))}
@@ -69,7 +76,7 @@ export default async function TasksPage() {
               </div>
             </div>
             
-            <Button type="submit" className="h-[84px] md:w-[120px] w-full">Add Task</Button>
+            <Button type="submit" className="h-[84px] md:w-[120px] w-full">إضافة مهمة</Button>
           </form>
         </CardContent>
       </Card>
@@ -81,13 +88,13 @@ export default async function TasksPage() {
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between border-b pb-2">
             <h3 className="font-semibold flex items-center gap-2">
-              <Circle className="w-4 h-4 text-muted-foreground" /> To Do
+              <Circle className="w-4 h-4 text-muted-foreground" /> قيد الانتظار
             </h3>
             <Badge variant="secondary">{todoTasks.length}</Badge>
           </div>
           <div className="flex flex-col gap-3">
             {todoTasks.map((task: any) => <TaskCard key={task.id} task={task} />)}
-            {todoTasks.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No tasks to do.</p>}
+            {todoTasks.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">لا توجد مهام قيد الانتظار.</p>}
           </div>
         </div>
 
@@ -95,13 +102,13 @@ export default async function TasksPage() {
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between border-b pb-2">
             <h3 className="font-semibold flex items-center gap-2">
-              <Clock className="w-4 h-4 text-blue-500" /> In Progress
+              <Clock className="w-4 h-4 text-blue-500" /> قيد التنفيذ
             </h3>
             <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">{inProgressTasks.length}</Badge>
           </div>
           <div className="flex flex-col gap-3">
             {inProgressTasks.map((task: any) => <TaskCard key={task.id} task={task} />)}
-            {inProgressTasks.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Nothing in progress.</p>}
+            {inProgressTasks.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">لا يوجد شيء قيد التنفيذ حاليًا.</p>}
           </div>
         </div>
 
@@ -109,21 +116,21 @@ export default async function TasksPage() {
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between border-b pb-2">
             <h3 className="font-semibold flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-500" /> Done
+              <CheckCircle2 className="w-4 h-4 text-green-500" /> مكتملة
             </h3>
             <Badge variant="secondary" className="bg-green-500/10 text-green-600">{doneTasks.length}</Badge>
           </div>
           <div className="flex flex-col gap-3">
             {doneTasks.map((task: any) => <TaskCard key={task.id} task={task} />)}
-            {doneTasks.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No tasks completed yet.</p>}
+            {doneTasks.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">لم تُكتمل أي مهمة بعد.</p>}
           </div>
         </div>
 
       </div>
 
       <JourneyFooter 
-        prevLink="/projects" prevLabel="Back to Projects"
-        nextLink="/habits" nextLabel="Next Step: Build Habits" 
+        prevLink="/projects" prevLabel="العودة للمشاريع"
+        nextLink="/habits" nextLabel="الخطوة التالية: بناء العادات" 
       />
     </div>
   );
@@ -150,7 +157,7 @@ function TaskCard({ task }: { task: any }) {
 
           <form action={deleteTask}>
             <input type="hidden" name="id" value={task.id} />
-            <Button variant="ghost" size="icon" aria-label="Delete Task" className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+            <Button variant="ghost" size="icon" aria-label="حذف المهمة" className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
               <Trash2 size={14} />
             </Button>
           </form>
@@ -164,7 +171,7 @@ function TaskCard({ task }: { task: any }) {
                </Badge>
              )}
              {task.priority === "HIGH" || task.priority === "URGENT" ? (
-               <Badge variant="destructive" className="text-[9px] px-1 py-0">{task.priority}</Badge>
+               <Badge variant="destructive" className="text-[9px] px-1 py-0">{PRIORITY_LABELS[task.priority] ?? task.priority}</Badge>
              ) : null}
           </div>
 
@@ -173,21 +180,21 @@ function TaskCard({ task }: { task: any }) {
               <form action={updateTaskStatus}>
                 <input type="hidden" name="id" value={task.id} />
                 <input type="hidden" name="status" value="IN_PROGRESS" />
-                <Button size="sm" variant="outline" className="h-6 text-[10px] px-2">Start</Button>
+                <Button size="sm" variant="outline" className="h-6 text-[10px] px-2">ابدأ</Button>
               </form>
             )}
             {task.status === "IN_PROGRESS" && (
               <form action={updateTaskStatus}>
                 <input type="hidden" name="id" value={task.id} />
                 <input type="hidden" name="status" value="DONE" />
-                <Button size="sm" className="h-6 text-[10px] px-2 bg-green-600 hover:bg-green-700">Done</Button>
+                <Button size="sm" className="h-6 text-[10px] px-2 bg-green-600 hover:bg-green-700">تم</Button>
               </form>
             )}
             {task.status === "DONE" && (
                <form action={updateTaskStatus}>
                <input type="hidden" name="id" value={task.id} />
                <input type="hidden" name="status" value="TODO" />
-               <Button size="sm" variant="ghost" className="h-6 text-[10px] px-2 text-muted-foreground">Undo</Button>
+               <Button size="sm" variant="ghost" className="h-6 text-[10px] px-2 text-muted-foreground">تراجع</Button>
              </form>
             )}
           </div>

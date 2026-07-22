@@ -9,17 +9,17 @@ export default async function VisionPage() {
   return (
     <div className="flex flex-col gap-6 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Vision</h1>
+        <h1 className="text-3xl font-bold tracking-tight">الرؤية</h1>
         <p className="text-muted-foreground mt-2">
-          Where do you see yourself in the long term? Your vision acts as your North Star.
+          أين ترى نفسك على المدى البعيد؟ رؤيتك تعمل كنجمك الشمالي الذي يهديك الطريق.
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Vision Statement</CardTitle>
+          <CardTitle>بيان الرؤية</CardTitle>
           <CardDescription>
-            Paint a clear picture of the future you are trying to create.
+            ارسم صورة واضحة للمستقبل الذي تسعى لبنائه.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -27,17 +27,17 @@ export default async function VisionPage() {
             <textarea
               name="vision"
               defaultValue={vision}
-              placeholder="In 10 years, I will have built..."
+              placeholder="خلال 10 سنوات، سأكون قد بنيت..."
               className="flex min-h-[150px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             />
-            <Button type="submit" className="w-fit">Save Vision</Button>
+            <Button type="submit" className="w-fit">حفظ الرؤية</Button>
           </form>
         </CardContent>
       </Card>
 
       <JourneyFooter 
-        prevLink="/constitution" prevLabel="Back to Constitution"
-        nextLink="/life-areas" nextLabel="Next Step: Set Life Areas" 
+        prevLink="/constitution" prevLabel="العودة للدستور"
+        nextLink="/life-areas" nextLabel="الخطوة التالية: حدّد مجالات الحياة" 
       />
     </div>
   );

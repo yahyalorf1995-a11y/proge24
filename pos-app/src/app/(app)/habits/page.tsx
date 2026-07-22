@@ -7,6 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2, Flame, Check } from "lucide-react";
 import { JourneyFooter } from "@/components/layout/JourneyFooter";
 
+const FREQUENCY_LABELS: Record<string, string> = {
+  DAILY: "يومي",
+  WEEKLY: "أسبوعي",
+};
+
 export default async function HabitsPage() {
   const habits = await getHabits();
   const lifeAreas = await getLifeAreas();
@@ -15,16 +20,16 @@ export default async function HabitsPage() {
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Habits</h1>
+        <h1 className="text-3xl font-bold tracking-tight">العادات</h1>
         <p className="text-muted-foreground mt-2">
-          Systems over goals. Build consistency by tracking your daily and weekly habits.
+          الأنظمة أهم من الأهداف. ابنِ الاستمرارية بتتبّع عاداتك اليومية والأسبوعية.
         </p>
       </div>
 
       {/* Add New Habit Form */}
       <Card className="bg-background">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg">Establish New Habit</CardTitle>
+          <CardTitle className="text-lg">إنشاء عادة جديدة</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={createHabit} className="flex gap-4 items-start flex-col md:flex-row">
@@ -32,7 +37,7 @@ export default async function HabitsPage() {
               <input
                 name="title"
                 required
-                placeholder="Habit Title (e.g., Meditate 10 mins)"
+                placeholder="عنوان العادة (مثال: تأمل 10 دقائق)"
                 className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
               <select
@@ -40,8 +45,8 @@ export default async function HabitsPage() {
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 defaultValue="DAILY"
               >
-                <option value="DAILY">Daily</option>
-                <option value="WEEKLY">Weekly</option>
+                <option value="DAILY">يومي</option>
+                <option value="WEEKLY">أسبوعي</option>
               </select>
               <select
                 name="lifeAreaId"
@@ -49,7 +54,7 @@ export default async function HabitsPage() {
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 defaultValue=""
               >
-                <option value="" disabled>Select Life Area (Required)</option>
+                <option value="" disabled>اختر مجال حياة (مطلوب)</option>
                 {lifeAreas.map((la: any) => (
                   <option key={la.id} value={la.id}>{la.title}</option>
                 ))}
@@ -59,14 +64,14 @@ export default async function HabitsPage() {
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 defaultValue="none"
               >
-                <option value="none">No specific goal (Optional)</option>
+                <option value="none">بدون هدف محدد (اختياري)</option>
                 {goals.map((g: any) => (
                   <option key={g.id} value={g.id}>{g.title}</option>
                 ))}
               </select>
             </div>
             
-            <Button type="submit" className="h-10 w-full md:w-[120px] mt-4 md:mt-0">Add Habit</Button>
+            <Button type="submit" className="h-10 w-full md:w-[120px] mt-4 md:mt-0">إضافة عادة</Button>
           </form>
         </CardContent>
       </Card>
@@ -82,17 +87,17 @@ export default async function HabitsPage() {
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex gap-2">
                     <Badge variant="outline" className="text-[10px] font-normal">
-                      {habit.lifeArea?.title || "Area"}
+                      {habit.lifeArea?.title || "مجال"}
                     </Badge>
-                    <Badge variant="secondary" className="text-[10px] font-normal uppercase">
-                      {habit.frequency}
+                    <Badge variant="secondary" className="text-[10px] font-normal">
+                      {FREQUENCY_LABELS[habit.frequency] ?? habit.frequency}
                     </Badge>
                   </div>
                   
                   {/* Delete Button */}
                   <form action={deleteHabit}>
                     <input type="hidden" name="id" value={habit.id} />
-                    <Button variant="ghost" size="icon" aria-label="Delete Habit" className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity" title="Delete Habit">
+                    <Button variant="ghost" size="icon" aria-label="حذف العادة" className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity" title="حذف العادة">
                       <Trash2 size={14} />
                     </Button>
                   </form>
@@ -108,7 +113,7 @@ export default async function HabitsPage() {
               <CardContent className="flex items-center justify-between mt-2 pb-4">
                 <div className="flex items-center gap-1.5 text-orange-500 font-medium bg-orange-500/10 px-2.5 py-1 rounded-md">
                   <Flame size={16} className={habit.currentStreak > 0 ? "fill-orange-500" : ""} />
-                  <span>{habit.currentStreak} Day Streak</span>
+                  <span>{habit.currentStreak} يوم متتالي</span>
                 </div>
 
                 <form action={toggleHabitCheckIn}>
@@ -119,14 +124,14 @@ export default async function HabitsPage() {
                     <>
                       <input type="hidden" name="status" value="done" />
                       <Button size="sm" variant="outline" className="bg-green-600/10 text-green-600 border-green-600/20 hover:bg-green-600/20 gap-1.5">
-                        <Check size={14} /> Checked In
+                        <Check size={14} /> تم التسجيل
                       </Button>
                     </>
                   ) : (
                     <>
                       <input type="hidden" name="status" value="undone" />
                       <Button size="sm" className="gap-1.5">
-                        Check In
+                        تسجيل حضور
                       </Button>
                     </>
                   )}
@@ -138,14 +143,14 @@ export default async function HabitsPage() {
 
         {habits.length === 0 && (
           <div className="col-span-full py-12 text-center text-muted-foreground border border-dashed rounded-lg">
-            No habits established yet. Start small and build consistency!
+            لم تُنشأ أي عادة بعد. ابدأ بشيء بسيط وابنِ الاستمرارية!
           </div>
         )}
       </div>
 
       <JourneyFooter 
-        prevLink="/tasks" prevLabel="Back to Tasks"
-        nextLink="/reviews" nextLabel="Next Step: Review System" 
+        prevLink="/tasks" prevLabel="العودة للمهام"
+        nextLink="/reviews" nextLabel="الخطوة التالية: راجع النظام" 
       />
     </div>
   );

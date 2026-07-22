@@ -10,17 +10,17 @@ export default async function LifeAreasPage() {
   return (
     <div className="flex flex-col gap-6 max-w-5xl mx-auto">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Life Areas</h1>
+        <h1 className="text-3xl font-bold tracking-tight">مجالات الحياة</h1>
         <p className="text-muted-foreground mt-2">
-          Categorize your life to maintain balance. Every goal and project will stem from these areas.
+          صنّف حياتك للحفاظ على التوازن. كل هدف ومشروع سينبع من هذه المجالات.
         </p>
       </div>
 
       {/* Add New Life Area Form */}
       <Card className="bg-background">
         <CardHeader>
-          <CardTitle className="text-lg">Add New Area</CardTitle>
-          <CardDescription>Create a new dimension of your life to focus on.</CardDescription>
+          <CardTitle className="text-lg">إضافة مجال جديد</CardTitle>
+          <CardDescription>أنشئ بُعدًا جديدًا من حياتك للتركيز عليه.</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={createLifeArea} className="flex gap-4 items-start">
@@ -28,18 +28,18 @@ export default async function LifeAreasPage() {
               <input
                 name="title"
                 required
-                placeholder="Title (e.g., Finance, Relationships)"
+                placeholder="العنوان (مثال: المال، العلاقات)"
                 className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
             </div>
             <div className="flex-2 flex flex-col gap-2 w-1/2">
               <input
                 name="description"
-                placeholder="Short description..."
+                placeholder="وصف مختصر..."
                 className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
             </div>
-            <Button type="submit" className="h-10">Add Area</Button>
+            <Button type="submit" className="h-10">إضافة مجال</Button>
           </form>
         </CardContent>
       </Card>
@@ -57,7 +57,7 @@ export default async function LifeAreasPage() {
                 {/* Delete Button via Server Action */}
                   <form action={deleteLifeArea}>
                   <input type="hidden" name="id" value={area.id} />
-                  <Button variant="ghost" size="icon" aria-label="Delete Area" className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity" title="Delete Area">
+                  <Button variant="ghost" size="icon" aria-label="حذف المجال" className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity" title="حذف المجال">
                     <Trash2 size={16} />
                   </Button>
                 </form>
@@ -66,16 +66,16 @@ export default async function LifeAreasPage() {
             </CardHeader>
             <CardContent>
               <CardDescription className="line-clamp-2">
-                {area.description || "No description provided."}
+                {area.description || "لا يوجد وصف."}
               </CardDescription>
             </CardContent>
             <CardFooter className="pt-0 pb-4">
               <div className="flex gap-2">
                 <div className="text-[10px] text-muted-foreground font-medium bg-secondary px-2 py-1 rounded-md">
-                  {area.goals?.length || 0} Goals
+                  {area.goals?.length || 0} أهداف
                 </div>
                 <div className="text-[10px] text-muted-foreground font-medium bg-secondary px-2 py-1 rounded-md">
-                  {area.habits?.length || 0} Habits
+                  {area.habits?.length || 0} عادات
                 </div>
               </div>
             </CardFooter>
@@ -84,14 +84,14 @@ export default async function LifeAreasPage() {
 
         {lifeAreas.length === 0 && (
           <div className="col-span-full py-12 text-center text-muted-foreground border border-dashed rounded-lg">
-            No life areas defined yet. Create your first one above!
+            لم تُحدَّد أي مجالات حياة بعد. أنشئ أول مجال أعلاه!
           </div>
         )}
       </div>
 
       <JourneyFooter 
-        prevLink="/vision" prevLabel="Back to Vision"
-        nextLink="/goals" nextLabel="Next Step: Set Goals" 
+        prevLink="/vision" prevLabel="العودة للرؤية"
+        nextLink="/goals" nextLabel="الخطوة التالية: حدّد الأهداف" 
       />
     </div>
   );
